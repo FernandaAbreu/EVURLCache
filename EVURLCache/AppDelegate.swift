@@ -23,17 +23,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // We want more than the default: 2^30 = 1GB
         EVURLCache.MAX_CACHE_SIZE = 30
         // Use this to force case insensitive filename compare when using a case sensitive filesystem (what OS X can have)
-        EVURLCache.FORCE_LOWERCASE = true // is already the default. You also have to put all files int he PreCache using lowercase names
+       
 
-        // You can create your own filtering to prevent using the cache for specific files
-        EVURLCache.filter { request in
-            if request.URL?.host == "githubbadge.appspot.com" {
-                return false
-            }
-            return true
-        }
-        
-        // Now activate this cache
+    // Now activate this cache
         EVURLCache.activate()
         NSLog("Cache is now active")
         return true

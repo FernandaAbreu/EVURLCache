@@ -10,16 +10,23 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    
+    @IBAction func CleanCache(sender: AnyObject) {
+        NSLog("removing....") ;
+        print("Hello world");
+        EVURLCache.removeAllCaches();
+    }
+    
+    
+
     @IBOutlet weak var webView: UIWebView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        // Uncomment the 2 lines below and comment the line below that to see an other nice test
-//        EVURLCache.RECREATE_CACHE_RESPONSE = false
-//        if let url = NSURL(string: "http://game.zorropk.com/gamenow/xiao5haiyanglixianji/") {
-        if let url = NSURL(string: "http://evict.nl") {
+        if let url = NSURL(string: "http://www.horariodebrasilia.org/") {
+        //if let url = NSURL(string: "http://evict.nl") {
             NSLog("navigating to \(url)")
             webView.loadRequest(NSURLRequest(URL: url))
         }

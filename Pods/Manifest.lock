@@ -1,3 +1,19 @@
-PODFILE CHECKSUM: 9b9a4be8e76b56ff532bec17e6292f45e96e3ecf
+PODS:
+  - ReachabilitySwift (2.3.3)
 
-COCOAPODS: 1.0.0.beta.8
+DEPENDENCIES:
+  - ReachabilitySwift (from `https://github.com/ashleymills/Reachability.swift`)
+
+EXTERNAL SOURCES:
+  ReachabilitySwift:
+    :git: https://github.com/ashleymills/Reachability.swift
+
+CHECKOUT OPTIONS:
+  ReachabilitySwift:
+    :commit: fa90df50c04f5743fbdf643cbe8d10562d75673d
+    :git: https://github.com/ashleymills/Reachability.swift
+
+SPEC CHECKSUMS:
+  ReachabilitySwift: e0f6b6f280effb47731acfaaa2d5ffe223703793
+
+COCOAPODS: 0.39.0

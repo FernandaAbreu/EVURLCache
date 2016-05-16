@@ -167,6 +167,7 @@
 				7F4A0D491BEE481400059923 /* Resources */,
 				ED5904373F15D0F0CB0655D5 /* 📦 Embed Pods Frameworks */,
 				3D41C5767D577AEF3868CAC5 /* 📦 Copy Pods Resources */,
+				EFA218E6A3C5EBFCCB6CA423 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -209,6 +210,7 @@
 				TargetAttributes = {
 					7F4A0D4A1BEE481400059923 = {
 						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = 6A9BVANK5G;
 					};
 					7F4E25A91C11A5C6009494A8 = {
 						CreatedOnToolsVersion = 7.1.1;
@@ -340,6 +342,21 @@
 			inputPaths = (
 			);
 			name = "📦 Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-EVURLCache/Pods-EVURLCache-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EFA218E6A3C5EBFCCB6CA423 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -481,10 +498,13 @@
 			baseConfigurationReference = CD76B9911492321A2FCCD8BE /* Pods-EVURLCache.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = EVURLCache/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = nl.evict.EVURLCache;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -493,10 +513,13 @@
 			baseConfigurationReference = DC5DD053A55845B5CAE6BBE2 /* Pods-EVURLCache.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = EVURLCache/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = nl.evict.EVURLCache;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};

@@ -16,12 +16,11 @@ import Foundation
 #endif
 
 public class EVURLCache : NSURLCache {
-
     public static var URLCACHE_CACHE_KEY = "MobileAppCacheKey" // Add this header variable to the response if you want to save the response using this key as the filename.
     public static var URLCACHE_EXPIRATION_AGE_KEY = "MobileAppExpirationAgeKey" // Add this header variable to the response to set the expiration age.
     public static var MAX_AGE = "604800000" // The default maximum age of a cached file in miliseconds. (1 week)
     public static var PRE_CACHE_FOLDER = "PreCache"  // The folder in your app with the prefilled cache content
-    public static var CACHE_FOLDER = "Cache" // The folder in the Documents folder where cached files will be saved
+    public static var CACHE_FOLDER = "API" // The folder in the Documents folder where cached files will be saved
     public static var MAX_FILE_SIZE = 24 // The maximum file size that will be cached (2^24 = 16MB)
     public static var MAX_CACHE_SIZE = 30 // The maximum file size that will be cached (2^30 = 256MB)
     public static var LOGGING = false // Set this to true to see all caching action in the output log
@@ -45,7 +44,7 @@ public class EVURLCache : NSURLCache {
     public class func filter (filterFor: ((request: NSURLRequest) -> Bool)) {
         _filter = filterFor
     }
-
+    
     // Log a message with info if enabled
     public static func debugLog<T>(object: T, filename: String = #file, line: Int = #line, funcname: String = #function) {
         if LOGGING {
@@ -91,16 +90,21 @@ public class EVURLCache : NSURLCache {
         }
 
         // Check file status only if we have network, otherwise return it anyway.
-        if EVURLCache.networkAvailable() {
-            if cacheItemExpired(request, storagePath: storagePath) {
-                let maxAge:String = request.valueForHTTPHeaderField(EVURLCache.URLCACHE_EXPIRATION_AGE_KEY) ?? EVURLCache.MAX_AGE
-                EVURLCache.debugLog("CACHE item older than \(maxAge) maxAgeHours");
-                return nil
-            }
-        }
+        //if EVURLCache.networkAvailable() {
+       //     if cacheItemExpired(request, storagePath: storagePath) {
+       //         let maxAge:String = request.valueForHTTPHeaderField(EVURLCache.URLCACHE_EXPIRATION_AGE_KEY) ?? EVURLCache.MAX_AGE
+       //         EVURLCache.debugLog("CACHE item older than \(maxAge) maxAgeHours");
+       ////         return nil
+       ////     }
+        //}
 
+        
+        if(EVURLCache.networkAvailable()){
+            return nil;
+        }
         // Read object from file
-        if let response = NSKeyedUnarchiver.unarchiveObjectWithFile(storagePath) as? NSCachedURLResponse {
+      
+         if let response = NSKeyedUnarchiver.unarchiveObjectWithFile(storagePath) as? NSCachedURLResponse {
             EVURLCache.debugLog("Returning cached data from \(storagePath)");
 
             // I have to find out the difrence. For now I will let the developer checkt which version to use
@@ -109,13 +113,18 @@ public class EVURLCache : NSURLCache {
                 let r = NSURLResponse(URL: response.response.URL!, MIMEType: response.response.MIMEType, expectedContentLength: response.data.length, textEncodingName: response.response.textEncodingName)
                 return NSCachedURLResponse(response: r, data: response.data, userInfo: response.userInfo, storagePolicy: .Allowed)
             }
-            // This works for the game, but not for my site.
             return response
         } else {
             EVURLCache.debugLog("The file is probably not put in the local path using NSKeyedArchiver \(storagePath)");
         }
+        
         return nil
     }
+    
+    
+    
+    
+    
 
     // Will be called by NSURLConnection when a request is complete.
     public override func storeCachedResponse(cachedResponse: NSCachedURLResponse, forRequest request: NSURLRequest) {
@@ -124,6 +133,10 @@ public class EVURLCache : NSURLCache {
         }
         if let httpResponse = cachedResponse.response as? NSHTTPURLResponse {
             if httpResponse.statusCode >= 400 {
+                EVURLCache.debugLog("CACHE Do not cache error \(httpResponse.statusCode) page for : \(request.URL) \(httpResponse.debugDescription)");
+                return
+            }
+            if httpResponse.statusCode >= 401 {
                 EVURLCache.debugLog("CACHE Do not cache error \(httpResponse.statusCode) page for : \(request.URL) \(httpResponse.debugDescription)");
                 return
             }
@@ -153,20 +166,21 @@ public class EVURLCache : NSURLCache {
                 EVURLCache.debugLog("Error \(error.debugDescription)");
             }
         }
-
-        if let previousResponse = NSKeyedUnarchiver.unarchiveObjectWithFile(storagePath) as? NSCachedURLResponse {
-            if previousResponse.data == cachedResponse.data && !cacheItemExpired(request, storagePath: storagePath) {
-                EVURLCache.debugLog("CACHE not rewriting stored file");
-                return
-            }
-        }
+         //if let previousResponse = NSKeyedUnarchiver.unarchiveObjectWithFile(storagePath) as? NSCachedURLResponse {
+            // if previousResponse.data == cachedResponse.data && !cacheItemExpired(request, storagePath: storagePath) {
+         // //        EVURLCache.debugLog("CACHE not rewriting stored file");
+         //        return
+        //     }
+         //}
 
         // save file
         EVURLCache.debugLog("Writing data to \(storagePath)");
-        if !NSKeyedArchiver.archiveRootObject(cachedResponse, toFile: storagePath) {
+       
+        if !NSKeyedArchiver.archiveRootObject(cachedResponse, toFile: storagePath){
             EVURLCache.debugLog("Could not write file to cache");
         } else {
             EVURLCache.debugLog("CACHE save file to Cache  : \(storagePath)");
+           
             // prevent iCloud backup
             if !EVURLCache.addSkipBackupAttributeToItemAtURL(NSURL(fileURLWithPath: storagePath)) {
                 EVURLCache.debugLog("Could not set the do not backup attribute");
@@ -174,22 +188,23 @@ public class EVURLCache : NSURLCache {
         }
     }
 
-    private func cacheItemExpired(request: NSURLRequest, storagePath: String) -> Bool {
-        // Max cache age for request
+     private func cacheItemExpired(request: NSURLRequest, storagePath: String) -> Bool {
+         // Max cache age for request
+        print(storagePath)
         let maxAge:String = request.valueForHTTPHeaderField(EVURLCache.URLCACHE_EXPIRATION_AGE_KEY) ?? EVURLCache.MAX_AGE
 
-        do {
-            let attributes = try NSFileManager.defaultManager().attributesOfItemAtPath(storagePath)
-            if let modDate:NSDate = attributes[NSFileModificationDate] as? NSDate {
+         do {
+             let attributes = try NSFileManager.defaultManager().attributesOfItemAtPath(storagePath)
+             if let modDate:NSDate = attributes[NSFileModificationDate] as? NSDate {
                 // Test if the file is older than the max age
                 if let threshold: NSTimeInterval = Double(maxAge) {
-                    let modificationTimeSinceNow:NSTimeInterval? = -modDate.timeIntervalSinceNow
-                    return modificationTimeSinceNow > threshold
-                }
-            }
-        } catch {}
+                     let modificationTimeSinceNow:NSTimeInterval? = -modDate.timeIntervalSinceNow
+                     return modificationTimeSinceNow > threshold
+                 }
+             }
+         } catch {}
 
-        return false
+         return false
     }
 
 
@@ -241,6 +256,16 @@ public class EVURLCache : NSURLCache {
         }
         localUrl = localUrl.stringByReplacingOccurrencesOfString("//", withString: "/")
         localUrl = localUrl.stringByReplacingOccurrencesOfString("//", withString: "/")
+        var count=1;
+        if NSUserDefaults.standardUserDefaults().objectForKey("count") != nil{
+            count=NSUserDefaults.standardUserDefaults().integerForKey("count");
+        }
+        
+        
+        let stringValueCount = "\(count)"
+        NSUserDefaults.standardUserDefaults().setObject(localUrl, forKey:stringValueCount)
+        NSUserDefaults.standardUserDefaults().setInteger(count+1,forKey:"count");
+        
         return localUrl
     }
 
@@ -252,6 +277,69 @@ public class EVURLCache : NSURLCache {
             debugLog("ERROR: Could not set 'exclude from backup' attribute for file \(url.absoluteString)")
         }
         return false
+    }
+    public func pathForDirectories() -> String {
+        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first!
+    }
+    func deleteFile(name:String){
+        let file = name;
+        let fileManager = NSFileManager.defaultManager()
+        let path: NSString = pathForDirectories()
+        let filePath = path.stringByAppendingPathComponent(file)
+        do {
+            try fileManager.removeItemAtPath(filePath)
+            print("file deleted!")
+        } catch {
+            print("file deletion didn't work")
+        }
+    }
+   public static func removeAllCaches() {
+      //   let url=NSURL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0]).URLByAppendingPathComponent(EVURLCache.CACHE_FOLDER).absoluteString
+       //  NSLog("navigating to \(url)")
+        // let cacheURL = NSURL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0]).URLByAppendingPathComponent(EVURLCache.CACHE_FOLDER)
+     //    let enumerator:NSDirectoryEnumerator = fileManager.enumeratorAtURL(cacheURL, includingPropertiesForKeys: nil, options: NSDirectoryEnumerationOptions(), errorHandler: nil)!;
+    
+   if NSUserDefaults.standardUserDefaults().objectForKey("count") != nil{
+    let countvar = NSUserDefaults.standardUserDefaults().integerForKey("count");
+        for index in 1...countvar {
+            print("\(index) times 5 is \(index * 5)")
+            let stringValueCount = "\(index)"
+            let url=NSUserDefaults.standardUserDefaults().stringForKey(stringValueCount);
+            if (url ?? "").isEmpty {
+                print("EMPTY")
+            }else{
+             do {
+                
+                   //  try NSFileManager.defaultManager().removeItemAtPath(url!)
+                    // print("file deleted!")
+                    if !NSKeyedArchiver.archiveRootObject("", toFile: url!){
+                        print("file deletion didn't work")
+                    }else{
+                        print("file deleted!")
+                        // prevent iCloud backup
+                        if !EVURLCache.addSkipBackupAttributeToItemAtURL(NSURL(fileURLWithPath:  url!)) {
+                            EVURLCache.debugLog("Could not set the do not backup attribute");
+                        }
+                    }
+                    
+             }catch {
+                print("DEU RUIMMM")
+                let fetchError = error as NSError
+                print("\(fetchError)");
+            }
+             NSUserDefaults.standardUserDefaults().removeObjectForKey(stringValueCount);
+             NSUserDefaults.standardUserDefaults().setInteger(countvar-1,forKey: "count");
+            }
+        }
+       
+        
+    }
+    
+        
+        print("REMOVE FINISH");
+        
+        
+    
     }
 
     // Check if we have a network connection
